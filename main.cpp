@@ -74,6 +74,12 @@ int main()
     //                        Part 2: Average                                    //
     ///////////////////////////////////////////////////////////////////////////////
 
+    // Calculate the upper envelope
+	// ??
+	// Calculate the lower envelope
+	// ??
+    
+	// Calculate the Average
     CImg<unsigned char> imgMoyenne = (imgMax+imgMin)/2;
     CImgDisplay dispMoyenne(imgMoyenne,"Image Moyenne");
 
