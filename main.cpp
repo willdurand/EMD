@@ -22,9 +22,11 @@ int main()
     ///////////////////////////////////////////////////////////////////////////////
     //                        Part 1: Finding minimas and maximas                //
     ///////////////////////////////////////////////////////////////////////////////
-    CImg<unsigned char> imgMax = imgLena;
-    CImg<unsigned char> imgMin = imgLena;
+	CImg<unsigned char> imgMax = imgLena.channel(0);
+	CImg<unsigned char> imgMin = imgLena.channel(0);
 
+	imgMax.print();
+    
     for (int i = 0; i<imgLena.width() ; i+=3) {
         for (int j = 0; j<imgLena.height() ; j+=3) {
 
@@ -42,7 +44,7 @@ int main()
             for (int k = i; k<i+3 ; k++) {
                 for (int l = j; l<j+3 ; l++) {
 
-                    // Max?
+                    // Max
                     if ((imgMax(k,l) <= max)&&(l!=ymax &&k!=xmax)) {
                         imgMax(k,l) = 0;
                     } else {
@@ -52,12 +54,12 @@ int main()
                         ymax = l;
                     }
 
-                    // Min?
+                    // Min
                     if ((imgMin(k,l) >= min)&&(l!=ymin &&k!=xmin)) {
                         imgMin(k,l) = 0;
                     } else {
                         min = imgMin(k,l);
-                        imgMin(xmin,ymin) = 0;
+						imgMin(xmin,ymin) = 0;
                         xmin = k;
                         ymin = l;
                     }
