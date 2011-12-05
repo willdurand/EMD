@@ -16,6 +16,7 @@
 
 using namespace cimg_library;
 
+/*
 double min(std::vector<Euclidean> vect) {
     double min = (*vect.begin()).getDistance();
     std::vector<Euclidean>::iterator it;
@@ -41,6 +42,7 @@ double max(std::vector<Euclidean> vect) {
 
     return max;
 }
+*/
 
 /*******************************************************************************
   Main
@@ -52,6 +54,7 @@ int main()
     CImgDisplay dispBase(imgLena,"Image de base");
 
     std::vector<Euclidean> vectEMax, vectEMin;
+	std::vector<int> w;
 
     ///////////////////////////////////////////////////////////////////////////////
     //                        Part 1: Finding minimas and maximas                //
@@ -149,13 +152,18 @@ int main()
         }
     }
 
-    // Calculate the window size
-    double d1 = MIN(min(vectEMax), min(vectEMin));
-    double d2 = MAX(min(vectEMax), min(vectEMin));
-    double d3 = MIN(max(vectEMax), max(vectEMin));
-    double d4 = MAX(max(vectEMax), max(vectEMin));
+	// Calculate the windows sizes
+	for(unsigned int i=0; i<vectEMin.size(); i++)
+	{
+		double d1 = MIN(vectEMax[i].getDistance(), vectEMin[i].getDistance());
+	    double d2 = MAX(vectEMax[i].getDistance(), vectEMin[i].getDistance());
+	    double d3 = MIN(vectEMax[i].getDistance(), vectEMin[i].getDistance());
+	    double d4 = MAX(vectEMax[i].getDistance(), vectEMin[i].getDistance());
 
-    int w = ((int)ceil(MIN(MIN(d1, d2), MIN(d3, d4)))) % 2 ? w + 1 : w;
+		int wi = (int)ceil(MIN(MIN(d1, d2), MIN(d3, d4)));
+	    wi = wi % 2 ? wi + 1 : wi;
+		w.push_back(wi);
+	}
 
     // Order filters with source image
 
