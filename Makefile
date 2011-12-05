@@ -2,7 +2,7 @@
 .SUFFIXES:.cpp .o
 
 EXEC=emd
-SOURCES=main.cpp
+SOURCES=main.cpp Euclidean.cpp
 
 OBJETS=$(SOURCES:%.cpp=%.o)
 
@@ -16,9 +16,9 @@ $(EXEC):$(OBJETS) Makefile
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm $(OBJETS)
+	rm -f $(OBJETS)
 clear:
-	rm $(EXEC)
+	rm -f $(EXEC)
 depend:
 	sed -e "/^#DEPENDANCIES/,$$ d" Makefile >dependances
 	echo "#DEPENDANCIES" >> dependances
@@ -26,4 +26,5 @@ depend:
 	cat dependances >Makefile
 	rm dependances
 
-main.o: main.cpp
+main.o: main.cpp Euclidean.hpp
+Euclidean.o: Euclidean.cpp
