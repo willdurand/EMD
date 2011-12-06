@@ -17,32 +17,32 @@
 using namespace cimg_library;
 
 /*
-double min(std::vector<Euclidean> vect) {
-    double min = (*vect.begin()).getDistance();
-    std::vector<Euclidean>::iterator it;
+   double min(std::vector<Euclidean> vect) {
+   double min = (*vect.begin()).getDistance();
+   std::vector<Euclidean>::iterator it;
 
-    for (it = vect.begin() + 1; it != vect.end(); it++) {
-        if ((*it).getDistance() < min) {
-            min = (*it).getDistance();
-        }
-    }
+   for (it = vect.begin() + 1; it != vect.end(); it++) {
+   if ((*it).getDistance() < min) {
+   min = (*it).getDistance();
+   }
+   }
 
-    return min;
-}
+   return min;
+   }
 
-double max(std::vector<Euclidean> vect) {
-    double max = (*vect.begin()).getDistance();
-    std::vector<Euclidean>::iterator it;
+   double max(std::vector<Euclidean> vect) {
+   double max = (*vect.begin()).getDistance();
+   std::vector<Euclidean>::iterator it;
 
-    for (it = vect.begin() + 1; it != vect.end(); it++) {
-        if ((*it).getDistance() > max) {
-            max = (*it).getDistance();
-        }
-    }
+   for (it = vect.begin() + 1; it != vect.end(); it++) {
+   if ((*it).getDistance() > max) {
+   max = (*it).getDistance();
+   }
+   }
 
-    return max;
-}
-*/
+   return max;
+   }
+   */
 
 /*******************************************************************************
   Main
@@ -54,7 +54,7 @@ int main()
     CImgDisplay dispBase(imgLena,"Image de base");
 
     std::vector<Euclidean> vectEMax, vectEMin;
-	std::vector<int> w;
+    std::vector<int> w;
 
     ///////////////////////////////////////////////////////////////////////////////
     //                        Part 1: Finding minimas and maximas                //
@@ -152,20 +152,46 @@ int main()
         }
     }
 
-	// Calculate the windows sizes
-	for(unsigned int i=0; i<vectEMin.size(); i++)
-	{
-		double d1 = MIN(vectEMax[i].getDistance(), vectEMin[i].getDistance());
-	    double d2 = MAX(vectEMax[i].getDistance(), vectEMin[i].getDistance());
-	    double d3 = MIN(vectEMax[i].getDistance(), vectEMin[i].getDistance());
-	    double d4 = MAX(vectEMax[i].getDistance(), vectEMin[i].getDistance());
+    // Calculate the windows sizes
+    for(unsigned int i = 0; i < vectEMin.size(); i++) {
+        double d1 = MIN(vectEMax[i].getDistance(), vectEMin[i].getDistance());
+        double d2 = MAX(vectEMax[i].getDistance(), vectEMin[i].getDistance());
+        double d3 = MIN(vectEMax[i].getDistance(), vectEMin[i].getDistance());
+        double d4 = MAX(vectEMax[i].getDistance(), vectEMin[i].getDistance());
 
-		int wi = (int)ceil(MIN(MIN(d1, d2), MIN(d3, d4)));
-	    wi = wi % 2 ? wi + 1 : wi;
-		w.push_back(wi);
-	}
+        int wi = (int)ceil(MIN(MIN(d1, d2), MIN(d3, d4)));
+        wi = wi % 2 ? wi + 1 : wi;
+        w.push_back(wi);
+    }
+
+    CImg<unsigned char> imgSource = imgLena.channel(0);
 
     // Order filters with source image
+    std::vector<unsigned char> vectFilterMax, vectFilterMin;
+
+    for(unsigned int i = 0; i < vectEMax.size(); i++) {
+        unsigned char max = 0;
+        for (int k = vectEMax[i].getX() - ((w[i] - 1) / 2); k < vectEMax[i].getX() + ((w[i] + 1) / 2); k++) {
+            for (int l = vectEMax[i].getY() - ((w[i] - 1) / 2); l < vectEMax[i].getY() + ((w[i] + 1) / 2); l++) {
+                if (imgSource(k, l) > max) {
+                    max = imgSource(k, l);
+                }
+            }
+        }
+        vectFilterMax.push_back(max);
+    }
+
+    for(unsigned int i = 0; i < vectEMin.size(); i++) {
+        unsigned char min = 10000000;
+        for (int k = vectEMin[i].getX() - ((w[i] - 1) / 2); k < vectEMin[i].getX() + ((w[i] + 1) / 2); k++) {
+            for (int l = vectEMin[i].getY() - ((w[i] - 1) / 2); l < vectEMin[i].getY() + ((w[i] + 1) / 2); l++) {
+                if (imgSource(k, l) < min) {
+                    min = imgSource(k, l);
+                }
+            }
+        }
+        vectFilterMin.push_back(min);
+    }
 
     // Calculate the upper envelope
 
