@@ -42,7 +42,7 @@ using namespace cimg_library;
 
    return max;
    }
-   */
+*/
 
 /*******************************************************************************
   Main
@@ -61,8 +61,6 @@ int main()
     ///////////////////////////////////////////////////////////////////////////////
     CImg<unsigned char> imgMax = imgLena.channel(0);
     CImg<unsigned char> imgMin = imgLena.channel(0);
-
-    imgMax.print();
 
     for (int i = 0; i<imgLena.width() ; i+=3) {
         for (int j = 0; j<imgLena.height() ; j+=3) {
@@ -182,7 +180,7 @@ int main()
     }
 
     for(unsigned int i = 0; i < vectEMin.size(); i++) {
-        unsigned char min = 10000000;
+        unsigned char min = 199;
         for (int k = vectEMin[i].getX() - ((w[i] - 1) / 2); k < vectEMin[i].getX() + ((w[i] + 1) / 2); k++) {
             for (int l = vectEMin[i].getY() - ((w[i] - 1) / 2); l < vectEMin[i].getY() + ((w[i] + 1) / 2); l++) {
                 if (imgSource(k, l) < min) {
@@ -193,20 +191,48 @@ int main()
         vectFilterMin.push_back(min);
     }
 
+	CImg<unsigned char> newImgMax(imgMax.width(), imgMax.height());
+
     // Calculate the upper envelope
+	for(unsigned int i = 0; i < vectEMax.size(); i++) {
+        for (int k = vectEMax[i].getX() - ((w[i] - 1) / 2); k < vectEMax[i].getX() + ((w[i] + 1) / 2); k++) {
+            for (int l = vectEMax[i].getY() - ((w[i] - 1) / 2); l < vectEMax[i].getY() + ((w[i] + 1) / 2); l++) {
+                if( (k == vectEMax[i].getX() && l == vectEMax[i].getY()) || imgMax(k, l) == 0 ) {
+					newImgMax(k, l) = vectFilterMax[i];
+				}
+				else {
+					newImgMax(k, l) = (imgMax(k, l) + vectFilterMax[i]) / 2;
+				}
+            }
+        }
+    }
+
+	CImg<unsigned char> newImgMin(imgMin.width(), imgMin.height());	
 
     // Calculate the lower envelope
+	for(unsigned int i = 0; i < vectEMin.size(); i++) {
+        for (int k = vectEMin[i].getX() - ((w[i] - 1) / 2); k < vectEMin[i].getX() + ((w[i] + 1) / 2); k++) {
+            for (int l = vectEMin[i].getY() - ((w[i] - 1) / 2); l < vectEMin[i].getY() + ((w[i] + 1) / 2); l++) {
+                if( (k == vectEMin[i].getX() && l == vectEMin[i].getY()) || imgMin(k, l) == 0 ) {
+					newImgMin(k, l) = vectFilterMin[i];
+				}
+				else {
+					newImgMin(k, l) = (imgMin(k, l) + vectFilterMin[i]) / 2;
+				}
+            }
+        }
+    }
 
     // Display images for max and min
-    CImgDisplay dispMax(imgMax,"Image de Max");
-    CImgDisplay dispMin(imgMin,"Image de Min");
+    CImgDisplay dispMax(newImgMax,"Image de Max");
+    CImgDisplay dispMin(newImgMin,"Image de Min");
 
     ///////////////////////////////////////////////////////////////////////////////
     //                        Part 2: Average                                    //
     ///////////////////////////////////////////////////////////////////////////////
 
     // Calculate the Average
-    CImg<unsigned char> imgMoyenne = (imgMax+imgMin)/2;
+    CImg<unsigned char> imgMoyenne = (newImgMax+newImgMin)/2;
     CImgDisplay dispMoyenne(imgMoyenne,"Image Moyenne");
 
     ///////////////////////////////////////////////////////////////////////////////
