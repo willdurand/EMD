@@ -169,8 +169,8 @@ int main()
 
   for(unsigned int i = 0; i < vectEMax.size(); i++) {
     unsigned char max = 0;
-    for (int k = vectEMax[i].getX() - ((w[i] - 1) / 2); k < vectEMax[i].getX() + ((w[i] + 1) / 2); k++) {
-      for (int l = vectEMax[i].getY() - ((w[i] - 1) / 2); l < vectEMax[i].getY() + ((w[i] + 1) / 2); l++) {
+    for (int k = vectEMax[i].getX() - ((w[i] + 1) / 2); k < vectEMax[i].getX() + ((w[i] + 1) / 2); k++) {
+      for (int l = vectEMax[i].getY() - ((w[i] + 1) / 2); l < vectEMax[i].getY() + ((w[i] + 1) / 2); l++) {
         if (imgSource(k, l) > max) {
           max = imgSource(k, l);
         }
@@ -181,8 +181,8 @@ int main()
 
   for(unsigned int i = 0; i < vectEMin.size(); i++) {
     unsigned char min = 199;
-    for (int k = vectEMin[i].getX() - ((w[i] - 1) / 2); k < vectEMin[i].getX() + ((w[i] + 1) / 2); k++) {
-      for (int l = vectEMin[i].getY() - ((w[i] - 1) / 2); l < vectEMin[i].getY() + ((w[i] + 1) / 2); l++) {
+    for (int k = vectEMin[i].getX() - ((w[i] + 1) / 2); k < vectEMin[i].getX() + ((w[i] + 1) / 2); k++) {
+      for (int l = vectEMin[i].getY() - ((w[i] + 1) / 2); l < vectEMin[i].getY() + ((w[i] + 1) / 2); l++) {
         if (imgSource(k, l) < min) {
           min = imgSource(k, l);
         }
@@ -195,8 +195,8 @@ int main()
 
   // Calculate the upper envelope
   for(unsigned int i = 0; i < vectEMax.size(); i++) {
-    for (int k = vectEMax[i].getX() - ((w[i] - 1) / 2); k < vectEMax[i].getX() + ((w[i] + 1) / 2); k++) {
-      for (int l = vectEMax[i].getY() - ((w[i] - 1) / 2); l < vectEMax[i].getY() + ((w[i] + 1) / 2); l++) {
+    for (int k = vectEMax[i].getX() - ((w[i] + 1) / 2); k < vectEMax[i].getX() + ((w[i] + 1) / 2); k++) {
+      for (int l = vectEMax[i].getY() - ((w[i] + 1) / 2); l < vectEMax[i].getY() + ((w[i] + 1) / 2); l++) {
         if( (k == vectEMax[i].getX() && l == vectEMax[i].getY()) || imgMax(k, l) == 0 ) {
           newImgMax(k, l) = vectFilterMax[i];
         }
@@ -211,8 +211,8 @@ int main()
 
   // Calculate the lower envelope
   for(unsigned int i = 0; i < vectEMin.size(); i++) {
-    for (int k = vectEMin[i].getX() - ((w[i] - 1) / 2); k < vectEMin[i].getX() + ((w[i] + 1) / 2); k++) {
-      for (int l = vectEMin[i].getY() - ((w[i] - 1) / 2); l < vectEMin[i].getY() + ((w[i] + 1) / 2); l++) {
+    for (int k = vectEMin[i].getX() - ((w[i] + 1) / 2); k < vectEMin[i].getX() + ((w[i] + 1) / 2); k++) {
+      for (int l = vectEMin[i].getY() - ((w[i] + 1) / 2); l < vectEMin[i].getY() + ((w[i] + 1) / 2); l++) {
         if( (k == vectEMin[i].getX() && l == vectEMin[i].getY()) || imgMin(k, l) == 0 ) {
           newImgMin(k, l) = vectFilterMin[i];
         }
@@ -232,7 +232,14 @@ int main()
   ///////////////////////////////////////////////////////////////////////////////
 
   // Calculate the Average
-  CImg<unsigned char> imgMoyenne = (newImgMax+newImgMin)/2;
+  CImg<unsigned char> imgMoyenne(imgLena.width(), imgLena.height());
+
+	for (int i = 0; i<imgLena.width() ; i++) {
+    for (int j = 0; j<imgLena.height() ; j++) {
+			imgMoyenne(i,j) = (newImgMin(i,j) + newImgMax(i,j)) /2;
+		}
+	}	
+ 
   CImgDisplay dispMoyenne(imgMoyenne,"Image Moyenne");
 
   ///////////////////////////////////////////////////////////////////////////////
