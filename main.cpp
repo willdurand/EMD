@@ -8,6 +8,7 @@
 #include "CImg.h"
 #include <math.h>
 #include <vector>
+#include <iostream>
 
 #include "Euclidean.hpp"
 
@@ -43,6 +44,18 @@ max = (*it).getDistance();
 return max;
 }
 */
+
+
+double Sum(CImg<unsigned char> img, int startedX, int startedY, int w)
+{
+  double res = 0;
+  for(int i = startedX; i < startedX + w; i++) {
+    for(int j = startedY; j < startedY + w; j++) {
+      res = img(i,j);
+    }
+  }
+  return res;
+}
 
 /*******************************************************************************
 Main
@@ -198,11 +211,22 @@ int main()
     for (int k = vectEMax[i].getX() - ((w[i] + 1) / 2); k < vectEMax[i].getX() + ((w[i] + 1) / 2); k++) {
       for (int l = vectEMax[i].getY() - ((w[i] + 1) / 2); l < vectEMax[i].getY() + ((w[i] + 1) / 2); l++) {
         if( (k == vectEMax[i].getX() && l == vectEMax[i].getY()) || imgMax(k, l) == 0 ) {
-          newImgMax(k, l) = vectFilterMax[i];
+          imgMax(k, l) = vectFilterMax[i];
         }
         else {
-          newImgMax(k, l) = (imgMax(k, l) + vectFilterMax[i]) / 2;
+          imgMax(k, l) = (imgMax(k, l) + vectFilterMax[i]) / 2;
         }
+      }
+    }
+  }
+
+  //Smooth of the upper envelope
+  for(unsigned int i = 0; i < vectEMax.size(); i++) {
+    double sum = Sum(imgMax, vectEMax[i].getX() - ((w[i] + 1) / 2), vectEMax[i].getY() - ((w[i] + 1) / 2), w[i]);
+    for (int k = vectEMax[i].getX() - ((w[i] + 1) / 2); k < vectEMax[i].getX() + ((w[i] + 1) / 2); k++) {
+      for (int l = vectEMax[i].getY() - ((w[i] + 1) / 2); l < vectEMax[i].getY() + ((w[i] + 1) / 2); l++) {
+        newImgMax(k, l) = (1./(w[i]*w[i])) * sum;
+        std::cout << ((1./(w[i]*w[i])) * sum) << std::endl;
       }
     }
   }
@@ -214,18 +238,31 @@ int main()
     for (int k = vectEMin[i].getX() - ((w[i] + 1) / 2); k < vectEMin[i].getX() + ((w[i] + 1) / 2); k++) {
       for (int l = vectEMin[i].getY() - ((w[i] + 1) / 2); l < vectEMin[i].getY() + ((w[i] + 1) / 2); l++) {
         if( (k == vectEMin[i].getX() && l == vectEMin[i].getY()) || imgMin(k, l) == 0 ) {
-          newImgMin(k, l) = vectFilterMin[i];
+          imgMin(k, l) = vectFilterMin[i];
         }
         else {
-          newImgMin(k, l) = (imgMin(k, l) + vectFilterMin[i]) / 2;
+          imgMin(k, l) = (imgMin(k, l) + vectFilterMin[i]) / 2;
         }
       }
     }
   }
 
+  //Smooth of the lower envelope
+  for(unsigned int i = 0; i < vectEMax.size(); i++) {
+    double sum = Sum(imgMin, vectEMin[i].getX() - ((w[i] + 1) / 2), vectEMin[i].getY() - ((w[i] + 1) / 2), w[i]);
+    for (int k = vectEMin[i].getX() - ((w[i] + 1) / 2); k < vectEMin[i].getX() + ((w[i] + 1) / 2); k++) {
+      for (int l = vectEMin[i].getY() - ((w[i] + 1) / 2); l < vectEMin[i].getY() + ((w[i] + 1) / 2); l++) {
+        newImgMin(k, l) = (1./(w[i]*w[i])) * sum;
+        std::cout << ((1./(w[i]*w[i])) * sum) << std::endl;
+      }
+    }
+  }
+
   // Display images for max and min
-  CImgDisplay dispMax(newImgMax,"Image de Max");
-  CImgDisplay dispMin(newImgMin,"Image de Min");
+  CImgDisplay dispMax(imgMax,"Image de Max");
+  CImgDisplay dispMin(imgMin,"Image de Min");
+  CImgDisplay dispEMax(newImgMax,"Image de enveloppe Max");
+  CImgDisplay dispEMin(newImgMin,"Image de enveloppe Min");
 
   ///////////////////////////////////////////////////////////////////////////////
   //                        Part 2: Average                                    //
@@ -234,11 +271,11 @@ int main()
   // Calculate the Average
   CImg<unsigned char> imgMoyenne(imgLena.width(), imgLena.height());
 
-	for (int i = 0; i<imgLena.width() ; i++) {
+  for (int i = 0; i<imgLena.width() ; i++) {
     for (int j = 0; j<imgLena.height() ; j++) {
-			imgMoyenne(i,j) = (newImgMin(i,j) + newImgMax(i,j)) /2;
-		}
-	}	
+      imgMoyenne(i,j) = (newImgMin(i,j) + newImgMax(i,j)) /2;
+    }
+  } 
  
   CImgDisplay dispMoyenne(imgMoyenne,"Image Moyenne");
 
