@@ -56,9 +56,8 @@ int main()
     }
 #else
     CImg<unsigned char> inputImg("lena.bmp");
-#endif
-
     CImgDisplay dispBase(inputImg,"Image de base");
+#endif
 
     std::vector<Euclidean> vectEMax, vectEMin;
     std::vector<int> w;
@@ -260,6 +259,16 @@ int main()
         }
     }
 
+    // Smooth of the lower envelope
+    for(unsigned int i = 0; i < vectEMax.size(); i++) {
+        double sum = Sum(imgMin, vectEMin[i].getX() - ((w[i] + 1) / 2), vectEMin[i].getY() - ((w[i] + 1) / 2), w[i]);
+        for (int k = vectEMin[i].getX() - ((w[i] - 1) / 2); k < vectEMin[i].getX() + ((w[i] + 1) / 2); k++) {
+            for (int l = vectEMin[i].getY() - ((w[i] - 1) / 2); l < vectEMin[i].getY() + ((w[i] + 1) / 2); l++) {
+                newImgMin(k, l) = (1./(w[i]*w[i])) * sum;
+            }
+        }
+    }
+
 #ifdef DEBUG
     printf("- Envelopes\n");
 
@@ -278,23 +287,13 @@ int main()
         }
         printf("\n");
     }
-#endif
-
-    // Smooth of the lower envelope
-    for(unsigned int i = 0; i < vectEMax.size(); i++) {
-        double sum = Sum(imgMin, vectEMin[i].getX() - ((w[i] + 1) / 2), vectEMin[i].getY() - ((w[i] + 1) / 2), w[i]);
-        for (int k = vectEMin[i].getX() - ((w[i] - 1) / 2); k < vectEMin[i].getX() + ((w[i] + 1) / 2); k++) {
-            for (int l = vectEMin[i].getY() - ((w[i] - 1) / 2); l < vectEMin[i].getY() + ((w[i] + 1) / 2); l++) {
-                newImgMin(k, l) = (1./(w[i]*w[i])) * sum;
-            }
-        }
-    }
-
+#else
     // Display images for max and min
     CImgDisplay dispMax(imgMax,"Image de Max");
     CImgDisplay dispMin(imgMin,"Image de Min");
     CImgDisplay dispEMax(newImgMax,"Image de enveloppe Max");
     CImgDisplay dispEMin(newImgMin,"Image de enveloppe Min");
+#endif
 
     ///////////////////////////////////////////////////////////////////////////////
     //                        Part 2: Average                                    //
@@ -318,20 +317,22 @@ int main()
         }
         printf("\n");
     }
-#endif
-
+#else
     CImgDisplay dispMoyenne(imgMoyenne,"Image Moyenne");
+#endif
 
     ///////////////////////////////////////////////////////////////////////////////
     //                        Partie 3: Deletion                                 //
     ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef DEBUG
     CImg<unsigned char> imgFin(inputImg - imgMoyenne);
     CImgDisplay dispFin(imgFin,"Image Finale");
 
     while (!dispBase.is_closed()) {
         dispBase.wait();
     }
+#endif
 
     return 0;
 }
