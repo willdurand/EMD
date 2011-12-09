@@ -19,13 +19,13 @@ using namespace cimg_library;
 
 double Sum(CImg<unsigned char> img, int startedX, int startedY, int w)
 {
-  double res = 0;
-  for(int i = startedX; i < startedX + w; i++) {
-    for(int j = startedY; j < startedY + w; j++) {
-      res = img(i,j);
+    double res = 0;
+    for(int i = startedX; i < startedX + w; i++) {
+        for(int j = startedY; j < startedY + w; j++) {
+            res = img(i,j);
+        }
     }
-  }
-  return res;
+    return res;
 }
 
 /*******************************************************************************
@@ -33,9 +33,32 @@ double Sum(CImg<unsigned char> img, int startedX, int startedY, int w)
  *******************************************************************************/
 int main()
 {
-    CImg<unsigned char> imgLena("lena.bmp");
+#ifdef DEBUG
+    CImg<unsigned char> inputImg(8, 8, 1, 3);
+    int tab[][8] = {
+        { 8, 8, 4, 1, 5, 2, 6, 3 },
+        { 6, 3, 2, 3, 7, 3, 9, 3 },
+        { 7, 8, 3, 2, 1, 4, 3, 7 },
+        { 4, 1, 2, 4, 3, 5, 7, 8 },
+        { 6, 4, 2, 1, 2, 5, 3, 4 },
+        { 1, 3, 7, 9, 9, 8, 7, 8 },
+        { 9, 2, 6, 7, 6, 8, 7, 7 },
+        { 8, 2, 1, 9, 7, 9, 1, 1 }
+    };
 
-    CImgDisplay dispBase(imgLena,"Image de base");
+    printf("Base:\n");
+    for (int i = 0; i < inputImg.width(); i++) {
+        for (int j = 0; j < inputImg.height(); j++) {
+            inputImg(i, j) = tab[i][j];
+            printf("%d ", inputImg(i, j));
+        }
+        printf("\n");
+    }
+#else
+    CImg<unsigned char> inputImg("lena.bmp");
+#endif
+
+    CImgDisplay dispBase(inputImg,"Image de base");
 
     std::vector<Euclidean> vectEMax, vectEMin;
     std::vector<int> w;
@@ -43,11 +66,11 @@ int main()
     ///////////////////////////////////////////////////////////////////////////////
     //                        Part 1: Finding minimas and maximas                //
     ///////////////////////////////////////////////////////////////////////////////
-    CImg<unsigned char> imgMax = imgLena.channel(0);
-    CImg<unsigned char> imgMin = imgLena.channel(0);
+    CImg<unsigned char> imgMax(inputImg.channel(0));
+    CImg<unsigned char> imgMin(inputImg.channel(0));
 
-    for (int i = 0; i<imgLena.width() ; i+=3) {
-        for (int j = 0; j<imgLena.height() ; j+=3) {
+    for (int i = 0; i < inputImg.width(); i += 3) {
+        for (int j = 0; j < inputImg.height(); j += 3) {
 
             // Save max and min locations
             int xmax = i;
@@ -99,6 +122,26 @@ int main()
         }
     }
 
+#ifdef DEBUG
+    printf("- Extremas\n");
+
+    printf("Max\n");
+    for (int i = 0; i < imgMax.width(); i++) {
+        for (int j = 0; j < imgMax.height(); j++) {
+            printf("%d ", imgMax(i, j));
+        }
+        printf("\n");
+    }
+
+    printf("Min\n");
+    for (int i = 0; i < imgMin.width(); i++) {
+        for (int j = 0; j < imgMin.height(); j++) {
+            printf("%d ", imgMin(i, j));
+        }
+        printf("\n");
+    }
+#endif
+
     // Array of Euclidean distance to the nearest non zero element
     std::vector<Euclidean>::iterator it1, it2;
 
@@ -146,7 +189,7 @@ int main()
         w.push_back(wi);
     }
 
-    CImg<unsigned char> imgSource = imgLena.channel(0);
+    CImg<unsigned char> imgSource(inputImg.channel(0));
 
     // Order filters with source image
     std::vector<unsigned char> vectFilterMax, vectFilterMin;
@@ -191,16 +234,15 @@ int main()
         }
     }
 
-		// Smooth of the upper envelope
-	  for(unsigned int i = 0; i < vectEMax.size(); i++) {
-	    double sum = Sum(imgMax, vectEMax[i].getX() - ((w[i] + 1) / 2), vectEMax[i].getY() - ((w[i] + 1) / 2), w[i]);
-	    for (int k = vectEMax[i].getX() - ((w[i] - 1) / 2); k < vectEMax[i].getX() + ((w[i] + 1) / 2); k++) {
-	      for (int l = vectEMax[i].getY() - ((w[i] - 1) / 2); l < vectEMax[i].getY() + ((w[i] + 1) / 2); l++) {
-	        newImgMax(k, l) = (1./(w[i]*w[i])) * sum;
-	        std::cout << ((1./(w[i]*w[i])) * sum) << std::endl;
-	      }
-	    }
-	  }
+    // Smooth of the upper envelope
+    for(unsigned int i = 0; i < vectEMax.size(); i++) {
+        double sum = Sum(imgMax, vectEMax[i].getX() - ((w[i] + 1) / 2), vectEMax[i].getY() - ((w[i] + 1) / 2), w[i]);
+        for (int k = vectEMax[i].getX() - ((w[i] - 1) / 2); k < vectEMax[i].getX() + ((w[i] + 1) / 2); k++) {
+            for (int l = vectEMax[i].getY() - ((w[i] - 1) / 2); l < vectEMax[i].getY() + ((w[i] + 1) / 2); l++) {
+                newImgMax(k, l) = (1./(w[i]*w[i])) * sum;
+            }
+        }
+    }
 
     CImg<unsigned char> newImgMin(imgMin.width(), imgMin.height());
 
@@ -218,35 +260,65 @@ int main()
         }
     }
 
-		// Smooth of the lower envelope
-	  for(unsigned int i = 0; i < vectEMax.size(); i++) {
-	    double sum = Sum(imgMin, vectEMin[i].getX() - ((w[i] + 1) / 2), vectEMin[i].getY() - ((w[i] + 1) / 2), w[i]);
-	    for (int k = vectEMin[i].getX() - ((w[i] - 1) / 2); k < vectEMin[i].getX() + ((w[i] + 1) / 2); k++) {
-	      for (int l = vectEMin[i].getY() - ((w[i] - 1) / 2); l < vectEMin[i].getY() + ((w[i] + 1) / 2); l++) {
-	        newImgMin(k, l) = (1./(w[i]*w[i])) * sum;
-	        std::cout << ((1./(w[i]*w[i])) * sum) << std::endl;
-	      }
-	    }
-	  }
+#ifdef DEBUG
+    printf("- Envelopes\n");
+
+    printf("Max\n");
+    for (int i = 0; i < newImgMax.width(); i++) {
+        for (int j = 0; j < newImgMax.height(); j++) {
+            printf("%d ", newImgMax(i, j));
+        }
+        printf("\n");
+    }
+
+    printf("Min\n");
+    for (int i = 0; i < newImgMin.width(); i++) {
+        for (int j = 0; j < newImgMin.height(); j++) {
+            printf("%d ", newImgMin(i, j));
+        }
+        printf("\n");
+    }
+#endif
+
+    // Smooth of the lower envelope
+    for(unsigned int i = 0; i < vectEMax.size(); i++) {
+        double sum = Sum(imgMin, vectEMin[i].getX() - ((w[i] + 1) / 2), vectEMin[i].getY() - ((w[i] + 1) / 2), w[i]);
+        for (int k = vectEMin[i].getX() - ((w[i] - 1) / 2); k < vectEMin[i].getX() + ((w[i] + 1) / 2); k++) {
+            for (int l = vectEMin[i].getY() - ((w[i] - 1) / 2); l < vectEMin[i].getY() + ((w[i] + 1) / 2); l++) {
+                newImgMin(k, l) = (1./(w[i]*w[i])) * sum;
+            }
+        }
+    }
 
     // Display images for max and min
     CImgDisplay dispMax(imgMax,"Image de Max");
     CImgDisplay dispMin(imgMin,"Image de Min");
-		CImgDisplay dispEMax(newImgMax,"Image de enveloppe Max");
-		CImgDisplay dispEMin(newImgMin,"Image de enveloppe Min");
+    CImgDisplay dispEMax(newImgMax,"Image de enveloppe Max");
+    CImgDisplay dispEMin(newImgMin,"Image de enveloppe Min");
 
     ///////////////////////////////////////////////////////////////////////////////
     //                        Part 2: Average                                    //
     ///////////////////////////////////////////////////////////////////////////////
 
     // Calculate the Average
-    CImg<unsigned char> imgMoyenne(imgLena.width(), imgLena.height());
+    CImg<unsigned char> imgMoyenne(inputImg.width(), inputImg.height());
 
-    for (int i = 0; i<imgLena.width() ; i++) {
-        for (int j = 0; j<imgLena.height() ; j++) {
-            imgMoyenne(i,j) = (newImgMin(i,j) + newImgMax(i,j)) /2;
+    for (int i = 0; i < inputImg.width(); i++) {
+        for (int j = 0; j < inputImg.height(); j++) {
+            imgMoyenne(i, j) = (newImgMin(i, j) + newImgMax(i, j)) /2;
         }
     }
+
+#ifdef DEBUG
+    printf("- Average\n");
+
+    for (int i = 0; i < imgMoyenne.width(); i++) {
+        for (int j = 0; j < imgMoyenne.height(); j++) {
+            printf("%d ", imgMoyenne(i, j));
+        }
+        printf("\n");
+    }
+#endif
 
     CImgDisplay dispMoyenne(imgMoyenne,"Image Moyenne");
 
@@ -254,7 +326,7 @@ int main()
     //                        Partie 3: Deletion                                 //
     ///////////////////////////////////////////////////////////////////////////////
 
-    CImg<unsigned char> imgFin = imgLena - imgMoyenne;
+    CImg<unsigned char> imgFin(inputImg - imgMoyenne);
     CImgDisplay dispFin(imgFin,"Image Finale");
 
     while (!dispBase.is_closed()) {
