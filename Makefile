@@ -30,5 +30,6 @@ depend:
 	cat dependances >Makefile
 	rm dependances
 
-main.o: main.cpp Euclidean.hpp
-Euclidean.o: Euclidean.cpp
+#DEPENDANCIES
+main.o: main.cpp CImg.h Euclidean.hpp
+Euclidean.o: Euclidean.cpp Euclidean.hpp
