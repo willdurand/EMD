@@ -134,7 +134,7 @@ int main()
     }
 
 #ifdef DEBUG
-    printf("- Extremas\n");
+    printf("Extremas:\n");
 
     printf("Max\n");
     for (int i = 0; i < imgMax.width(); i++) {
@@ -255,6 +255,18 @@ int main()
         }
     }
 
+#ifdef DEBUG
+    printf("Envelopes:\n");
+
+    printf("Max\n");
+    for (int i = 0; i < newImgMax.width(); i++) {
+        for (int j = 0; j < newImgMax.height(); j++) {
+            printf("%d ", newImgMax(i, j));
+        }
+        printf("\n");
+    }
+#endif
+
     // Smooth of the upper envelope
     for (int k = 0; k < imgSource.width(); k++) {
         for (int l = 0; l < imgSource.height(); l++) {
@@ -277,6 +289,16 @@ int main()
         }
     }
 
+#ifdef DEBUG
+    printf("Min\n");
+    for (int i = 0; i < newImgMin.width(); i++) {
+        for (int j = 0; j < newImgMin.height(); j++) {
+            printf("%d ", newImgMin(i, j));
+        }
+        printf("\n");
+    }
+#endif
+
     // Smooth of the lower envelope
     for (int k = 0; k < imgSource.width(); k++) {
         for (int l = 0; l < imgSource.height(); l++) {
@@ -287,7 +309,7 @@ int main()
     }
 
 #ifdef DEBUG
-    printf("- Envelopes\n");
+    printf("Smoothed envelopes:\n");
 
     printf("Max\n");
     for (int i = 0; i < newImgMax.width(); i++) {
@@ -326,7 +348,7 @@ int main()
     }
 
 #ifdef DEBUG
-    printf("- Average\n");
+    printf("Average:\n");
 
     for (int i = 0; i < imgMoyenne.width(); i++) {
         for (int j = 0; j < imgMoyenne.height(); j++) {
@@ -335,7 +357,7 @@ int main()
         printf("\n");
     }
 #else
-    CImgDisplay dispMoyenne(imgMoyenne,"Image Moyenne");
+    CImgDisplay dispMoyenne(imgMoyenne, "Image Moyenne");
 #endif
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -345,7 +367,7 @@ int main()
 
 #ifndef DEBUG
     CImg<unsigned char> imgFin(inputImg - imgMoyenne);
-    CImgDisplay dispFin(imgFin,"Image Finale");
+    CImgDisplay dispFin(imgFin, "Image Finale");
 
     while (!dispBase.is_closed()) {
         dispBase.wait();
