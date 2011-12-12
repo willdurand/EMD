@@ -19,7 +19,7 @@ debug: CFLAGS += -DDEBUG
 debug: LFLAGS += -DDEBUG
 debug: $(EXEC)
 
-clean:
+clean: clear
 	rm -f $(OBJETS)
 clear:
 	rm -f $(EXEC)

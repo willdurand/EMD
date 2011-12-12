@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-//                      Empirical Mode Decomposition                          //
+//              Empirical Mode Decomposition                                  //
 // BERNARD Guillaume                                                          //
 // DURAND William                                                             //
 // ZZ3F2 ISIMA                                                                //
@@ -17,15 +17,27 @@
 
 using namespace cimg_library;
 
-double Sum(CImg<unsigned char> img, int startedX, int startedY, int w)
-{
+double Sum(CImg<unsigned char> img, int startedX, int startedY, int w) {
     double res = 0;
-    for(int i = startedX; i < startedX + w; i++) {
-        for(int j = startedY; j < startedY + w; j++) {
-            res = img(i,j);
+    for(int i = startedX - ((w - 1) / 2); i < startedX + ((w + 1) / 2); i++) {
+        for(int j = startedY - ((w - 1) / 2) ; j < startedY + ((w + 1) / 2); j++) {
+            if( (i >= 0 && i < img.width()) && (j >= 0  && j < img.height()) ) {
+                res += img(i,j);
+            }
         }
     }
     return res;
+}
+
+void ShowMatrix(CImg<unsigned char> img) {
+    std::cout << std::endl;
+    for (int i = 0; i < 9 ; i++) {
+        for (int j = 0; j < 9; j++) {
+            std::cout << (double) img(i, j) << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
 }
 
 /*******************************************************************************
@@ -60,11 +72,11 @@ int main()
 #endif
 
     std::vector<Euclidean> vectEMax, vectEMin;
-    std::vector<int> w;
 
     ///////////////////////////////////////////////////////////////////////////////
-    //                        Part 1: Finding minimas and maximas                //
+    //              Part 1: Finding minimas and maximas                          //
     ///////////////////////////////////////////////////////////////////////////////
+
     CImg<unsigned char> imgMax(inputImg.channel(0));
     CImg<unsigned char> imgMin(inputImg.channel(0));
 
@@ -89,9 +101,9 @@ int main()
                 for (int l = j; l<j+3 ; l++) {
 
                     // Max
-                    if ((imgMax(k,l) <= max)&&(l!=ymax &&k!=xmax)) {
+                    if ((imgMax(k,l) <= max) && (l!=ymax || k!=xmax)) {
                         imgMax(k,l) = 0;
-                    } else {
+                    } else if (l!=ymax || k!=xmax) {
                         max = imgMax(k,l);
                         imgMax(xmax,ymax) = 0;
                         xmax = k;
@@ -102,9 +114,9 @@ int main()
                     }
 
                     // Min
-                    if ((imgMin(k,l) >= min)&&(l!=ymin &&k!=xmin)) {
+                    if ((imgMin(k,l) >= min) && (l!=ymin || k!=xmin)) {
                         imgMin(k,l) = 0;
-                    } else {
+                    } else if (l!=ymax || k!=xmax) {
                         min = imgMin(k,l);
                         imgMin(xmin,ymin) = 0;
                         xmin = k;
@@ -176,6 +188,9 @@ int main()
         }
     }
 
+    int wmax = 0;
+    std::vector<int> w;
+
     // Calculate the windows sizes
     for(unsigned int i = 0; i < vectEMin.size(); i++) {
         double d1 = MIN(vectEMax[i].getDistance(), vectEMin[i].getDistance());
@@ -184,7 +199,13 @@ int main()
         double d4 = MAX(vectEMax[i].getDistance(), vectEMin[i].getDistance());
 
         int wi = (int)ceil(MIN(MIN(d1, d2), MIN(d3, d4)));
-        wi = wi % 2 ? wi + 1 : wi;
+        if(wi%2 == 0)
+        {
+            wi++;
+        }
+        if(wi > wmax) {
+            wmax=wi;
+        }
         w.push_back(wi);
     }
 
@@ -193,24 +214,28 @@ int main()
     // Order filters with source image
     std::vector<unsigned char> vectFilterMax, vectFilterMin;
 
-    for(unsigned int i = 0; i < vectEMax.size(); i++) {
+    for(int unsigned i = 0; i < vectEMax.size(); i++) {
         unsigned char max = 0;
         for (int k = vectEMax[i].getX() - ((w[i] - 1) / 2); k < vectEMax[i].getX() + ((w[i] + 1) / 2); k++) {
             for (int l = vectEMax[i].getY() - ((w[i] - 1) / 2); l < vectEMax[i].getY() + ((w[i] + 1) / 2); l++) {
-                if (imgSource(k, l) > max) {
-                    max = imgSource(k, l);
+                if( (k>=0 && k<imgSource.width()) && (l>=0  && l<imgSource.height()) ) {
+                    if (imgSource(k, l) > max) {
+                        max = imgSource(k, l);
+                    }
                 }
             }
         }
         vectFilterMax.push_back(max);
     }
 
-    for(unsigned int i = 0; i < vectEMin.size(); i++) {
-        unsigned char min = 199;
+    for(int unsigned i = 0; i < vectEMin.size(); i++) {
+        unsigned char min = 255;
         for (int k = vectEMin[i].getX() - ((w[i] - 1) / 2); k < vectEMin[i].getX() + ((w[i] + 1) / 2); k++) {
             for (int l = vectEMin[i].getY() - ((w[i] - 1) / 2); l < vectEMin[i].getY() + ((w[i] + 1) / 2); l++) {
-                if (imgSource(k, l) < min) {
-                    min = imgSource(k, l);
+                if( (k>=0 && k<imgSource.width()) && (l>=0  && l<imgSource.height()) ) {
+                    if (imgSource(k, l) < min) {
+                        min = imgSource(k, l);
+                    }
                 }
             }
         }
@@ -220,25 +245,21 @@ int main()
     CImg<unsigned char> newImgMax(imgMax.width(), imgMax.height());
 
     // Calculate the upper envelope
-    for(unsigned int i = 0; i < vectEMax.size(); i++) {
+    for(int unsigned i = 0; i < vectEMax.size(); i++) {
         for (int k = vectEMax[i].getX() - ((w[i] - 1) / 2); k < vectEMax[i].getX() + ((w[i] + 1) / 2); k++) {
             for (int l = vectEMax[i].getY() - ((w[i] - 1) / 2); l < vectEMax[i].getY() + ((w[i] + 1) / 2); l++) {
-                if( (k == vectEMax[i].getX() && l == vectEMax[i].getY()) || imgMax(k, l) == 0 ) {
+                if( (k>=0 && k<imgSource.width()) && (l>=0  && l<imgSource.height()) ) {
                     imgMax(k, l) = vectFilterMax[i];
-                }
-                else {
-                    imgMax(k, l) = (imgMax(k, l) + vectFilterMax[i]) / 2;
                 }
             }
         }
     }
 
     // Smooth of the upper envelope
-    for(unsigned int i = 0; i < vectEMax.size(); i++) {
-        double sum = Sum(imgMax, vectEMax[i].getX() - ((w[i] + 1) / 2), vectEMax[i].getY() - ((w[i] + 1) / 2), w[i]);
-        for (int k = vectEMax[i].getX() - ((w[i] - 1) / 2); k < vectEMax[i].getX() + ((w[i] + 1) / 2); k++) {
-            for (int l = vectEMax[i].getY() - ((w[i] - 1) / 2); l < vectEMax[i].getY() + ((w[i] + 1) / 2); l++) {
-                newImgMax(k, l) = (1./(w[i]*w[i])) * sum;
+    for (int k = 0; k < imgSource.width(); k++) {
+        for (int l = 0; l < imgSource.height(); l++) {
+            if( (k>=0 && k<imgSource.width()) && (l>=0  && l<imgSource.height()) ) {
+                newImgMax(k, l) = (int)Sum(imgMax, k, l,wmax)/(wmax*wmax);
             }
         }
     }
@@ -246,25 +267,21 @@ int main()
     CImg<unsigned char> newImgMin(imgMin.width(), imgMin.height());
 
     // Calculate the lower envelope
-    for(unsigned int i = 0; i < vectEMin.size(); i++) {
+    for(int unsigned i = 0; i < vectEMin.size(); i++) {
         for (int k = vectEMin[i].getX() - ((w[i] - 1) / 2); k < vectEMin[i].getX() + ((w[i] + 1) / 2); k++) {
             for (int l = vectEMin[i].getY() - ((w[i] - 1) / 2); l < vectEMin[i].getY() + ((w[i] + 1) / 2); l++) {
-                if( (k == vectEMin[i].getX() && l == vectEMin[i].getY()) || imgMin(k, l) == 0 ) {
+                if( (k>=0 && k<imgSource.width()) && (l>=0  && l<imgSource.height()) ) {
                     imgMin(k, l) = vectFilterMin[i];
-                }
-                else {
-                    imgMin(k, l) = (imgMin(k, l) + vectFilterMin[i]) / 2;
                 }
             }
         }
     }
 
     // Smooth of the lower envelope
-    for(unsigned int i = 0; i < vectEMax.size(); i++) {
-        double sum = Sum(imgMin, vectEMin[i].getX() - ((w[i] + 1) / 2), vectEMin[i].getY() - ((w[i] + 1) / 2), w[i]);
-        for (int k = vectEMin[i].getX() - ((w[i] - 1) / 2); k < vectEMin[i].getX() + ((w[i] + 1) / 2); k++) {
-            for (int l = vectEMin[i].getY() - ((w[i] - 1) / 2); l < vectEMin[i].getY() + ((w[i] + 1) / 2); l++) {
-                newImgMin(k, l) = (1./(w[i]*w[i])) * sum;
+    for (int k = 0; k < imgSource.width(); k++) {
+        for (int l = 0; l < imgSource.height(); l++) {
+            if( (k>=0 && k<imgSource.width()) && (l>=0  && l<imgSource.height()) ) {
+                newImgMin(k, l) = (int)Sum(imgMin, k, l,wmax)/(wmax*wmax);
             }
         }
     }
@@ -296,7 +313,7 @@ int main()
 #endif
 
     ///////////////////////////////////////////////////////////////////////////////
-    //                        Part 2: Average                                    //
+    //                       Part 2: Average                                     //
     ///////////////////////////////////////////////////////////////////////////////
 
     // Calculate the Average
@@ -322,8 +339,9 @@ int main()
 #endif
 
     ///////////////////////////////////////////////////////////////////////////////
-    //                        Partie 3: Deletion                                 //
+    //                         Partie 3: Deletion                                //
     ///////////////////////////////////////////////////////////////////////////////
+
 
 #ifndef DEBUG
     CImg<unsigned char> imgFin(inputImg - imgMoyenne);
