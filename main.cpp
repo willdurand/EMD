@@ -7,6 +7,7 @@
 
 #include "CImg.h"
 #include <math.h>
+#include <time.h>
 #include <vector>
 #include <iostream>
 
@@ -68,35 +69,45 @@ int main()
     //              Part 1: Finding minimas and maximas                          //
     ///////////////////////////////////////////////////////////////////////////////
 
+    timeval tim;
+    double t1, t2;
+
     CImg<float> imgMax(inputImg.channel(0));
     CImg<float> imgMin(inputImg.channel(0));
 
-    printf("  Calculate the extremas..\n");
+    fprintf(stdout, "%-40s", "Calculate the extremas...");
+
+    gettimeofday(&tim, NULL);
+    t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+
+    int xmin, xmax, ymin, ymax;
+    float min, max;
+
     for (int i = 0; i < inputImg.width(); i += SIZE) {
         for (int j = 0; j < inputImg.height(); j += SIZE) {
 
             // Save max and min locations
-            int xmax = i;
-            int ymax = j;
-            int xmin = i;
-            int ymin = j;
+            xmax = i;
+            ymax = j;
+            xmin = i;
+            ymin = j;
 
             // save values
-            float max = imgMax(i,j);
-            float min = imgMin(i,j);
+            max = imgMax(i,j);
+            min = imgMin(i,j);
 
             Euclidean eMax(i, j);
             Euclidean eMin(i, j);
 
             // SIZExSIZE
-            for (int k = i; k<i+SIZE ; k++) {
-                for (int l = j; l<j+SIZE ; l++) {
+            for (int k = i; k < i + SIZE; k++) {
+                for (int l = j; l < j + SIZE; l++) {
 
                     // Max
-                    if ((imgMax(k,l) <= max) && (l!=ymax || k!=xmax)) {
-                        imgMax(k,l) = 0;
+                    if ((imgMax(k, l) <= max) && (l != ymax || k != xmax)) {
+                        imgMax(k, l) = 0;
                     } else if (l!=ymax || k!=xmax) {
-                        max = imgMax(k,l);
+                        max = imgMax(k, l);
                         imgMax(xmax,ymax) = 0;
                         xmax = k;
                         ymax = l;
@@ -106,11 +117,11 @@ int main()
                     }
 
                     // Min
-                    if ((imgMin(k,l) >= min) && (l!=ymin || k!=xmin)) {
-                        imgMin(k,l) = 0;
-                    } else if (l!=ymax || k!=xmax) {
-                        min = imgMin(k,l);
-                        imgMin(xmin,ymin) = 0;
+                    if ((imgMin(k, l) >= min) && (l != ymin || k != xmin)) {
+                        imgMin(k, l) = 0;
+                    } else if (l != ymax || k != xmax) {
+                        min = imgMin(k, l);
+                        imgMin(xmin, ymin) = 0;
                         xmin = k;
                         ymin = l;
 
@@ -145,10 +156,18 @@ int main()
     }
 #endif
 
+    gettimeofday(&tim, NULL);
+    t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
+    printf("%.6f seconds\n", t2 - t1);
+
     // Array of Euclidean distance to the nearest non zero element
     std::vector<Euclidean>::iterator it1, it2;
 
-    printf("  Calculate the Euclidean distances..\n");
+    fprintf(stdout, "%-40s", "Calculate the Euclidean distances...");
+
+    gettimeofday(&tim, NULL);
+    t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+
     for (it1 = vectEMax.begin(); it1 != vectEMax.end(); it1++) {
         for (it2 = it1 + 1; it2 != vectEMax.end(); it2++) {
             double dist = (*it1).computeDistanceFrom(*it2);
@@ -181,9 +200,17 @@ int main()
         }
     }
 
-    int wmax = 0;
-    printf("  Calculate the window size..\n");
+    gettimeofday(&tim, NULL);
+    t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
+    printf("%.6f seconds\n", t2 - t1);
+
+    fprintf(stdout, "%-40s", "Calculate the window size...");
+
+    gettimeofday(&tim, NULL);
+    t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+
     // Calculate the window size
+    int wmax = 0;
     for(unsigned int i = 0; i < vectEMin.size(); i++) {
         double d = MAX(Euclidean::max(vectEMax), Euclidean::max(vectEMin));
 
@@ -193,9 +220,17 @@ int main()
         }
     }
 
+    gettimeofday(&tim, NULL);
+    t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
+    printf("%.6f seconds\n", t2 - t1);
+
     CImg<float> imgSource(inputImg.channel(0));
 
-    printf("  Order the filters..\n");
+    fprintf(stdout, "%-40s", "Order the filters...");
+
+    gettimeofday(&tim, NULL);
+    t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+
     // Order filters with source image
     std::vector<float> vectFilterMax, vectFilterMin;
 
@@ -227,9 +262,17 @@ int main()
         vectFilterMin.push_back(min);
     }
 
+    gettimeofday(&tim, NULL);
+    t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
+    printf("%.6f seconds\n", t2 - t1);
+
     CImg<float> newImgMax(imgMax.width(), imgMax.height());
 
-    printf("  Calculate the upper envelope..\n");
+    fprintf(stdout, "%-40s", "Calculate the upper envelope...");
+
+    gettimeofday(&tim, NULL);
+    t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+
     // Calculate the upper envelope
     for(int unsigned i = 0; i < vectEMax.size(); i++) {
         for (int k = vectEMax[i].getX() - ((wmax - 1) / 2); k < vectEMax[i].getX() + ((wmax + 1) / 2); k++) {
@@ -258,7 +301,15 @@ int main()
     }
 #endif
 
-    printf("  Smooth the upper envelope..\n");
+    gettimeofday(&tim, NULL);
+    t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
+    printf("%.6f seconds\n", t2 - t1);
+
+    fprintf(stdout, "%-40s", "Smooth the upper envelope...");
+
+    gettimeofday(&tim, NULL);
+    t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+
     // Smooth of the upper envelope
     for (int k = 0; k < imgSource.width(); k++) {
         for (int l = 0; l < imgSource.height(); l++) {
@@ -268,9 +319,17 @@ int main()
         }
     }
 
+    gettimeofday(&tim, NULL);
+    t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
+    printf("%.6f seconds\n", t2 - t1);
+
     CImg<float> newImgMin(imgMin.width(), imgMin.height());
 
-    printf("  Calculate the lower envelope..\n");
+    fprintf(stdout, "%-40s", "Calculate the lower envelope...");
+
+    gettimeofday(&tim, NULL);
+    t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+
     // Calculate the lower envelope
     for(int unsigned i = 0; i < vectEMin.size(); i++) {
         for (int k = vectEMin[i].getX() - ((wmax - 1) / 2); k < vectEMin[i].getX() + ((wmax + 1) / 2); k++) {
@@ -297,7 +356,15 @@ int main()
     }
 #endif
 
-    printf("  Smooth the lower envelope..\n");
+    gettimeofday(&tim, NULL);
+    t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
+    printf("%.6f seconds\n", t2 - t1);
+
+    fprintf(stdout, "%-40s", "Smooth the lower envelope...");
+
+    gettimeofday(&tim, NULL);
+    t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+
     // Smooth of the lower envelope
     for (int k = 0; k < imgSource.width(); k++) {
         for (int l = 0; l < imgSource.height(); l++) {
@@ -333,11 +400,19 @@ int main()
     //CImgDisplay dispSMin(newImgMin,"Smooth Min");
 #endif
 
+    gettimeofday(&tim, NULL);
+    t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
+    printf("%.6f seconds\n", t2 - t1);
+
     ///////////////////////////////////////////////////////////////////////////////
     //                       Part 2: Average                                     //
     ///////////////////////////////////////////////////////////////////////////////
 
-    printf("  Average..\n");
+    fprintf(stdout, "%-40s", "Average...");
+
+    gettimeofday(&tim, NULL);
+    t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+
     // Calculate the Average
     CImg<float> imgMoyenne(inputImg.width(), inputImg.height());
 
@@ -359,6 +434,10 @@ int main()
 #else
     //CImgDisplay dispMoyenne(imgMoyenne, "Average");
 #endif
+
+    gettimeofday(&tim, NULL);
+    t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
+    printf("%.6f seconds\n", t2 - t1);
 
     ///////////////////////////////////////////////////////////////////////////////
     //                         Partie 3: Deletion                                //
