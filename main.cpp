@@ -7,11 +7,15 @@
 
 #include "CImg.h"
 #include <math.h>
-#include <time.h>
+
 #include <vector>
 #include <iostream>
 
 #include "Euclidean.hpp"
+
+#ifdef DEBUG
+#include <time.h>
+#endif
 
 #define MIN(x,y) ((x)<(y)?(x):(y))
 #define MAX(x,y) ((x)>(y)?(x):(y))
@@ -37,31 +41,8 @@ double sum(CImg<float> img, int startedX, int startedY, int w) {
  *******************************************************************************/
 int main()
 {
-#ifdef DEBUG
-    CImg<float> inputImg(8, 8, 1, 3);
-    int tab[][8] = {
-        { 8, 8, 4, 1, 5, 2, 6, 3 },
-        { 6, 3, 2, 3, 7, 3, 9, 3 },
-        { 7, 8, 3, 2, 1, 4, 3, 7 },
-        { 4, 1, 2, 4, 3, 5, 7, 8 },
-        { 6, 4, 2, 1, 2, 5, 3, 4 },
-        { 1, 3, 7, 9, 9, 8, 7, 8 },
-        { 9, 2, 6, 7, 6, 8, 7, 7 },
-        { 8, 2, 1, 9, 7, 9, 1, 1 }
-    };
-
-    printf("Base:\n");
-    for (int i = 0; i < inputImg.width(); i++) {
-        for (int j = 0; j < inputImg.height(); j++) {
-            inputImg(i, j) = tab[i][j];
-            printf("%d ", inputImg(i, j));
-        }
-        printf("\n");
-    }
-#else
     CImg<float> inputImg("lena.bmp");
     CImgDisplay dispBase(inputImg,"Source Image");
-#endif
 
     std::vector<Euclidean> vectEMax, vectEMin;
 
@@ -69,16 +50,20 @@ int main()
     //              Part 1: Finding minimas and maximas                          //
     ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef DEBUG
     timeval tim;
     double t1, t2;
+#endif
 
     CImg<float> imgMax(inputImg.channel(0));
     CImg<float> imgMin(inputImg.channel(0));
 
+#ifdef DEBUG
     fprintf(stdout, "%-40s", "Calculate the extremas...");
 
     gettimeofday(&tim, NULL);
     t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+#endif
 
     int xmin, xmax, ymin, ymax;
     float min, max;
@@ -137,36 +122,20 @@ int main()
     }
 
 #ifdef DEBUG
-    printf("Extremas:\n");
-
-    printf("Max\n");
-    for (int i = 0; i < imgMax.width(); i++) {
-        for (int j = 0; j < imgMax.height(); j++) {
-            printf("%d ", imgMax(i, j));
-        }
-        printf("\n");
-    }
-
-    printf("Min\n");
-    for (int i = 0; i < imgMin.width(); i++) {
-        for (int j = 0; j < imgMin.height(); j++) {
-            printf("%d ", imgMin(i, j));
-        }
-        printf("\n");
-    }
-#endif
-
     gettimeofday(&tim, NULL);
     t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
     printf("%.6f seconds\n", t2 - t1);
+#endif
 
     // Array of Euclidean distance to the nearest non zero element
     std::vector<Euclidean>::iterator it1, it2;
 
+#ifdef DEBUG
     fprintf(stdout, "%-40s", "Calculate the Euclidean distances...");
 
     gettimeofday(&tim, NULL);
     t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+#endif
 
     for (it1 = vectEMax.begin(); it1 != vectEMax.end(); it1++) {
         for (it2 = it1 + 1; it2 != vectEMax.end(); it2++) {
@@ -200,6 +169,7 @@ int main()
         }
     }
 
+#ifdef DEBUG
     gettimeofday(&tim, NULL);
     t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
     printf("%.6f seconds\n", t2 - t1);
@@ -208,6 +178,7 @@ int main()
 
     gettimeofday(&tim, NULL);
     t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+#endif
 
     // Calculate the window size
     int wmax = 0;
@@ -220,16 +191,20 @@ int main()
         }
     }
 
+#ifdef DEBUG
     gettimeofday(&tim, NULL);
     t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
     printf("%.6f seconds\n", t2 - t1);
+#endif
 
     CImg<float> imgSource(inputImg.channel(0));
 
+#ifdef DEBUG
     fprintf(stdout, "%-40s", "Order the filters...");
 
     gettimeofday(&tim, NULL);
     t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+#endif
 
     // Order filters with source image
     std::vector<float> vectFilterMax, vectFilterMin;
@@ -262,16 +237,20 @@ int main()
         vectFilterMin.push_back(min);
     }
 
+#ifdef DEBUG
     gettimeofday(&tim, NULL);
     t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
     printf("%.6f seconds\n", t2 - t1);
+#endif
 
     CImg<float> newImgMax(imgMax.width(), imgMax.height());
 
+#ifdef DEBUG
     fprintf(stdout, "%-40s", "Calculate the upper envelope...");
 
     gettimeofday(&tim, NULL);
     t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+#endif
 
     // Calculate the upper envelope
     for(int unsigned i = 0; i < vectEMax.size(); i++) {
@@ -290,17 +269,6 @@ int main()
     }
 
 #ifdef DEBUG
-    printf("Envelopes:\n");
-
-    printf("Max\n");
-    for (int i = 0; i < newImgMax.width(); i++) {
-        for (int j = 0; j < newImgMax.height(); j++) {
-            printf("%d ", newImgMax(i, j));
-        }
-        printf("\n");
-    }
-#endif
-
     gettimeofday(&tim, NULL);
     t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
     printf("%.6f seconds\n", t2 - t1);
@@ -309,6 +277,7 @@ int main()
 
     gettimeofday(&tim, NULL);
     t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+#endif
 
     // Smooth of the upper envelope
     for (int k = 0; k < imgSource.width(); k++) {
@@ -319,16 +288,20 @@ int main()
         }
     }
 
+#ifdef DEBUG
     gettimeofday(&tim, NULL);
     t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
     printf("%.6f seconds\n", t2 - t1);
+#endif
 
     CImg<float> newImgMin(imgMin.width(), imgMin.height());
 
+#ifdef DEBUG
     fprintf(stdout, "%-40s", "Calculate the lower envelope...");
 
     gettimeofday(&tim, NULL);
     t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+#endif
 
     // Calculate the lower envelope
     for(int unsigned i = 0; i < vectEMin.size(); i++) {
@@ -347,15 +320,6 @@ int main()
     }
 
 #ifdef DEBUG
-    printf("Min\n");
-    for (int i = 0; i < newImgMin.width(); i++) {
-        for (int j = 0; j < newImgMin.height(); j++) {
-            printf("%d ", newImgMin(i, j));
-        }
-        printf("\n");
-    }
-#endif
-
     gettimeofday(&tim, NULL);
     t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
     printf("%.6f seconds\n", t2 - t1);
@@ -364,6 +328,7 @@ int main()
 
     gettimeofday(&tim, NULL);
     t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+#endif
 
     // Smooth of the lower envelope
     for (int k = 0; k < imgSource.width(); k++) {
@@ -375,43 +340,27 @@ int main()
     }
 
 #ifdef DEBUG
-    printf("Smoothed envelopes:\n");
-
-    printf("Max\n");
-    for (int i = 0; i < newImgMax.width(); i++) {
-        for (int j = 0; j < newImgMax.height(); j++) {
-            printf("%d ", newImgMax(i, j));
-        }
-        printf("\n");
-    }
-
-    printf("Min\n");
-    for (int i = 0; i < newImgMin.width(); i++) {
-        for (int j = 0; j < newImgMin.height(); j++) {
-            printf("%d ", newImgMin(i, j));
-        }
-        printf("\n");
-    }
-#else
     // Display images for max and min
-    //CImgDisplay dispEMax(imgMax,"Envelope Max");
-    //CImgDisplay dispEMin(imgMin,"Envelope Min");
-    //CImgDisplay dispSMax(newImgMax,"Smooth Max");
-    //CImgDisplay dispSMin(newImgMin,"Smooth Min");
-#endif
+    CImgDisplay dispEMax(imgMax,"Envelope Max");
+    CImgDisplay dispEMin(imgMin,"Envelope Min");
+    CImgDisplay dispSMax(newImgMax,"Smooth Max");
+    CImgDisplay dispSMin(newImgMin,"Smooth Min");
 
     gettimeofday(&tim, NULL);
     t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
     printf("%.6f seconds\n", t2 - t1);
+#endif
 
     ///////////////////////////////////////////////////////////////////////////////
     //                       Part 2: Average                                     //
     ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef DEBUG
     fprintf(stdout, "%-40s", "Average...");
 
     gettimeofday(&tim, NULL);
     t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+#endif
 
     // Calculate the Average
     CImg<float> imgMoyenne(inputImg.width(), inputImg.height());
@@ -423,39 +372,27 @@ int main()
     }
 
 #ifdef DEBUG
-    printf("Average:\n");
-
-    for (int i = 0; i < imgMoyenne.width(); i++) {
-        for (int j = 0; j < imgMoyenne.height(); j++) {
-            printf("%d ", imgMoyenne(i, j));
-        }
-        printf("\n");
-    }
-#else
-    //CImgDisplay dispMoyenne(imgMoyenne, "Average");
-#endif
+    CImgDisplay dispMoyenne(imgMoyenne, "Average");
 
     gettimeofday(&tim, NULL);
     t2 = tim.tv_sec+(tim.tv_usec/1000000.0);
     printf("%.6f seconds\n", t2 - t1);
+#endif
 
     ///////////////////////////////////////////////////////////////////////////////
     //                         Partie 3: Deletion                                //
     ///////////////////////////////////////////////////////////////////////////////
 
-
-#ifndef DEBUG
-    printf("  Deletion..\n");
-    CImg<float> imgMode(inputImg - imgMoyenne);
-    CImgDisplay dispMode(imgMode, "Mode 1");
+#ifdef DEBUG
+    printf("Deletion..\n");
 #endif
 
-#ifndef DEBUG
-    printf("End\n");
+    CImg<float> imgMode(inputImg - imgMoyenne);
+    CImgDisplay dispMode(imgMode, "Mode 1");
+
     while (!dispBase.is_closed()) {
         dispBase.wait();
     }
-#endif
 
     return 0;
 }
