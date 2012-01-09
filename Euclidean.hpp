@@ -2,6 +2,7 @@
 #define __EUCLIDIAN_HPP__
 
 #include <math.h>
+#include <vector>
 
 class Euclidean
 {
