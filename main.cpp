@@ -36,14 +36,9 @@ double sum(CImg<float> img, int startedX, int startedY, int w) {
     return res;
 }
 
-/*******************************************************************************
-  Main
- *******************************************************************************/
-int main()
+CImg<float> decompose(const CImg<float> input)
 {
-    CImg<float> inputImg("lena.bmp");
-    CImgDisplay dispBase(inputImg,"Source Image");
-
+    CImg<float>inputImg(input);
     std::vector<Euclidean> vectEMax, vectEMin;
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -387,8 +382,38 @@ int main()
     printf("Deletion..\n");
 #endif
 
-    CImg<float> imgMode(inputImg - imgMoyenne);
-    CImgDisplay dispMode(imgMode, "Mode 1");
+    return inputImg - imgMoyenne;
+}
+
+/*******************************************************************************
+  Main
+ *******************************************************************************/
+int main()
+{
+    char buffer [50];
+    CImg<float> inputImg("lena.bmp");
+    CImgDisplay dispBase(inputImg, "Source Image");
+
+    // 1st decomposition
+    CImg<float> imgMode1 = decompose(inputImg);
+    CImgDisplay dispMode1(imgMode1, "Mode 1");
+
+    CImg<float> imgMode2 = decompose(inputImg - imgMode1);
+    CImgDisplay dispMode2(imgMode2, "Mode 2");
+
+    /*
+    for (int i = 2; i < 3; i++) {
+        sprintf(buffer, "Mode %d", i);
+        fprintf(stdout, "Decomposing %s\n", buffer);
+
+        inputImg = inputImg - imgMode;
+        imgMode  = decompose(inputImg);
+
+        CImgDisplay dispModeBis(imgMode, buffer);
+    }
+    */
+
+    printf("End.\n");
 
     while (!dispBase.is_closed()) {
         dispBase.wait();
