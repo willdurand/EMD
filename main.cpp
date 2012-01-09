@@ -19,7 +19,7 @@ using namespace cimg_library;
 
 int SIZE = 3;
 
-double Sum(CImg<float> img, int startedX, int startedY, int w) {
+double sum(CImg<float> img, int startedX, int startedY, int w) {
     double res = 0;
     for(int i = startedX - ((w - 1) / 2); i < startedX + ((w + 1) / 2); i++) {
         for(int j = startedY - ((w - 1) / 2) ; j < startedY + ((w + 1) / 2); j++) {
@@ -31,7 +31,7 @@ double Sum(CImg<float> img, int startedX, int startedY, int w) {
     return res;
 }
 
-void ShowMatrix(CImg<float> img) {
+void showMatrix(CImg<float> img) {
     std::cout << std::endl;
     for (int i = 0; i < 9 ; i++) {
         for (int j = 0; j < 9; j++) {
@@ -42,31 +42,6 @@ void ShowMatrix(CImg<float> img) {
     std::cout << std::endl;
 }
 
-double min(std::vector<Euclidean> vect) {
-    double min = (*vect.begin()).getDistance();
-    std::vector<Euclidean>::iterator it;
-
-    for (it = vect.begin() + 1; it != vect.end(); it++) {
-        if ((*it).getDistance() < min) {
-            min = (*it).getDistance();
-        }
-    }
-
-    return min;
-}
-
-double max(std::vector<Euclidean> vect) {
-    double max = (*vect.begin()).getDistance();
-    std::vector<Euclidean>::iterator it;
-
-    for (it = vect.begin() + 1; it != vect.end(); it++) {
-        if ((*it).getDistance() > max) {
-            max = (*it).getDistance();
-        }
-    }
-
-    return max;
-}
 
 /*******************************************************************************
   Main
@@ -222,10 +197,10 @@ int main()
     printf("  Calculate the window size..\n");
     // Calculate the window size
     for(unsigned int i = 0; i < vectEMin.size(); i++) {
-        //double d1 = MIN(min(vectEMax), min(vectEMin));
-        //double d2 = MAX(min(vectEMax), min(vectEMin));
-        //double d3 = MIN(max(vectEMax), max(vectEMin));
-        double d4 = MAX(max(vectEMax), max(vectEMin));
+        //double d1 = MIN(Euclidean::min(vectEMax), Euclidean::min(vectEMin));
+        //double d2 = MAX(Euclidean::min(vectEMax), Euclidean::min(vectEMin));
+        //double d3 = MIN(Euclidean::max(vectEMax), Euclidean::max(vectEMin));
+        double d4 = MAX(Euclidean::max(vectEMax), Euclidean::max(vectEMin));
 
         wmax = (int)ceil(d4);
         if(wmax % 2 == 0) {
@@ -303,7 +278,7 @@ int main()
     for (int k = 0; k < imgSource.width(); k++) {
         for (int l = 0; l < imgSource.height(); l++) {
             if( (k >= 0 && k < imgSource.width()) && (l >= 0  && l < imgSource.height()) ) {
-                newImgMax(k, l) = (int)Sum(imgMax, k, l, wmax) / (wmax * wmax);
+                newImgMax(k, l) = (int)sum(imgMax, k, l, wmax) / (wmax * wmax);
             }
         }
     }
@@ -342,7 +317,7 @@ int main()
     for (int k = 0; k < imgSource.width(); k++) {
         for (int l = 0; l < imgSource.height(); l++) {
             if( (k >= 0 && k < imgSource.width()) && (l >= 0  && l < imgSource.height()) ) {
-                newImgMin(k, l) = (int)Sum(imgMin, k, l, wmax) / (wmax * wmax);
+                newImgMin(k, l) = (int)sum(imgMin, k, l, wmax) / (wmax * wmax);
             }
         }
     }

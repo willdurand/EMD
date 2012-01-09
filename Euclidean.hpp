@@ -26,7 +26,12 @@ class Euclidean
 
         double computeDistanceFrom(const Euclidean & euclidian);
 
+        static double max(const std::vector<Euclidean> vect);
+
+        static double min(const std::vector<Euclidean> vect);
+
     private:
+
         int _x;
 
         int _y;
