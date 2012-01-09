@@ -21,25 +21,14 @@ int SIZE = 3;
 
 double sum(CImg<float> img, int startedX, int startedY, int w) {
     double res = 0;
-    for(int i = startedX - ((w - 1) / 2); i < startedX + ((w + 1) / 2); i++) {
-        for(int j = startedY - ((w - 1) / 2) ; j < startedY + ((w + 1) / 2); j++) {
-            if((i >= 0 && i < img.width()) && (j >= 0  && j < img.height())) {
+    for (int i = startedX - ((w - 1) / 2); i < startedX + ((w + 1) / 2); i++) {
+        for (int j = startedY - ((w - 1) / 2) ; j < startedY + ((w + 1) / 2); j++) {
+            if ((i >= 0 && i < img.width()) && (j >= 0  && j < img.height())) {
                 res += img(i,j);
             }
         }
     }
     return res;
-}
-
-void showMatrix(CImg<float> img) {
-    std::cout << std::endl;
-    for (int i = 0; i < 9 ; i++) {
-        for (int j = 0; j < 9; j++) {
-            std::cout << (double) img(i, j) << " ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << std::endl;
 }
 
 /*******************************************************************************
@@ -196,12 +185,9 @@ int main()
     printf("  Calculate the window size..\n");
     // Calculate the window size
     for(unsigned int i = 0; i < vectEMin.size(); i++) {
-        //double d1 = MIN(Euclidean::min(vectEMax), Euclidean::min(vectEMin));
-        //double d2 = MAX(Euclidean::min(vectEMax), Euclidean::min(vectEMin));
-        //double d3 = MIN(Euclidean::max(vectEMax), Euclidean::max(vectEMin));
-        double d4 = MAX(Euclidean::max(vectEMax), Euclidean::max(vectEMin));
+        double d = MAX(Euclidean::max(vectEMax), Euclidean::max(vectEMin));
 
-        wmax = (int)ceil(d4);
+        wmax = (int)ceil(d);
         if(wmax % 2 == 0) {
             wmax++;
         }
@@ -248,7 +234,7 @@ int main()
     for(int unsigned i = 0; i < vectEMax.size(); i++) {
         for (int k = vectEMax[i].getX() - ((wmax - 1) / 2); k < vectEMax[i].getX() + ((wmax + 1) / 2); k++) {
             for (int l = vectEMax[i].getY() - ((wmax - 1) / 2); l < vectEMax[i].getY() + ((wmax + 1) / 2); l++) {
-                if( (k >= 0 && k < imgSource.width()) && (l >= 0  && l < imgSource.height()) ) {
+                if ((k >= 0 && k < imgSource.width()) && (l >= 0  && l < imgSource.height())) {
                     if( imgMax(k, l) == 0 ) {
                         imgMax(k, l) = vectFilterMax[i];
                     }
