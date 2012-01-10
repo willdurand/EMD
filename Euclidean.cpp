@@ -1,9 +1,9 @@
 #include "Euclidean.hpp"
 
-double Euclidean::computeDistanceFrom(const Euclidean & euclidian)
+double Euclidean::computeDistanceFrom(const Euclidean & euclidean) const
 {
-    double diffx = _x - euclidian.getX();
-    double diffy = _y - euclidian.getY();
+    double diffx = _x - euclidean.getX();
+    double diffy = _y - euclidean.getY();
     double diffx_sqr = pow(diffx, 2);
     double diffy_sqr = pow(diffy, 2);
 
