@@ -16,4 +16,4 @@ Compile in a normal way:
 
 Use it:
 
-    ./emd
+    ./emd <image>

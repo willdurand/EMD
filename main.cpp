@@ -258,12 +258,17 @@ CImg<float> decompose(const CImg<float> input)
 /*******************************************************************************
   Main
  *******************************************************************************/
-int main()
+int main(int argc, char **argv)
 {
+    if (argc != 2) {
+        printf("Usage: ./emd <image>\n");
+        return 1;
+    }
+
     char modeTitle[30], residueTitle[50];
     CImgDisplay disp[NB_ITERATIONS * 2 + 1];
 
-    CImg<float> inputImg("lena.bmp"), imgMode;
+    CImg<float> inputImg(argv[1]), imgMode;
     disp[0].assign(inputImg, "Source Image");
 
     for (int i = 1; i < NB_ITERATIONS + 1; i++) {
