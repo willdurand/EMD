@@ -34,6 +34,7 @@ double sum(CImg<float> img, int startedX, int startedY, int w) {
             }
         }
     }
+
     return res;
 }
 
