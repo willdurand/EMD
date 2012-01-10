@@ -13,7 +13,10 @@
 
 #include "Euclidean.hpp"
 
-#define NB_ITERATIONS 10
+#define MAX_ITERATIONS 15
+
+// Variance delta
+#define DELTA 50
 
 #define MIN(x,y) ((x)<(y)?(x):(y))
 #define MAX(x,y) ((x)>(y)?(x):(y))
@@ -260,27 +263,43 @@ CImg<float> decompose(const CImg<float> input)
  *******************************************************************************/
 int main(int argc, char **argv)
 {
+    char modeTitle[30], residueTitle[50];
+    double variance = 1000000;
+
     if (argc != 2) {
-        printf("Usage: ./emd <image>\n");
+        std::cout << "Usage: ./emd <image>" << std::endl;
         return 1;
     }
 
-    char modeTitle[30], residueTitle[50];
-    CImgDisplay disp[NB_ITERATIONS * 2 + 1];
+    CImgDisplay disp[MAX_ITERATIONS * 2 + 1];
 
     CImg<float> inputImg(argv[1]), imgMode;
     disp[0].assign(inputImg, "Source Image");
 
-    for (int i = 1; i < NB_ITERATIONS + 1; i++) {
+    for (int i = 1; i < MAX_ITERATIONS + 1; i++) {
         sprintf(modeTitle, "BEMC-%d", i);
-        sprintf(residueTitle, "Residue %s", modeTitle);
-        fprintf(stdout, "Decomposing %s\n", modeTitle);
+        std::cout << "Decomposing " << modeTitle << std::endl;
 
+        // Process
         imgMode = decompose(inputImg);
         inputImg = inputImg - imgMode;
 
+        // Display BEMC i
         disp[i].assign(imgMode, modeTitle);
-        disp[NB_ITERATIONS +  i].assign(inputImg, residueTitle);
+
+        // Display residue
+        sprintf(residueTitle, "Residue %s", modeTitle);
+        disp[MAX_ITERATIONS + i].assign(inputImg, residueTitle);
+
+        // Get variance
+        std::cout << "Variance: " << inputImg.variance() << std::endl;
+
+        if (fabs(variance - inputImg.variance()) < DELTA) {
+            std::cout << "Ended at iteration " << i << std::endl;
+            break;
+        } else {
+            variance = inputImg.variance();
+        }
     }
 
     while (!disp[0].is_closed()) {
