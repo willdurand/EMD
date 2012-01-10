@@ -6,11 +6,7 @@ Fast and Adaptive Bidimensional Empirical Mode Decomposition Using Order-Statist
 
 ### Usage
 
-Compile in `debug` mode:
-
-    make clean && make debug
-
-Compile in a normal way:
+Compile it:
 
     make clean && make
 

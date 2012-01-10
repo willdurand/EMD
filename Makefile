@@ -15,10 +15,6 @@ $(EXEC):$(OBJETS) Makefile
 .cpp.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
-debug: CFLAGS += -DDEBUG
-debug: LFLAGS += -DDEBUG
-debug: $(EXEC)
-
 clean: clear
 	rm -f $(OBJETS)
 clear:
