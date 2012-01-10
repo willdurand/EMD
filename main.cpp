@@ -17,6 +17,8 @@
 #include <time.h>
 #endif
 
+#define NB_ITERATIONS 3
+
 #define MIN(x,y) ((x)<(y)?(x):(y))
 #define MAX(x,y) ((x)>(y)?(x):(y))
 
@@ -390,33 +392,24 @@ CImg<float> decompose(const CImg<float> input)
  *******************************************************************************/
 int main()
 {
-    char buffer [50];
-    CImg<float> inputImg("lena.bmp");
-    CImgDisplay dispBase(inputImg, "Source Image");
+    char title[50];
+    CImgDisplay disp[NB_ITERATIONS + 1];
 
-    // 1st decomposition
-    CImg<float> imgMode1 = decompose(inputImg);
-    CImgDisplay dispMode1(imgMode1, "Mode 1");
+    CImg<float> inputImg("lena.bmp"), imgMode;
+    disp[0].assign(inputImg, "Source Image");
 
-    CImg<float> imgMode2 = decompose(inputImg - imgMode1);
-    CImgDisplay dispMode2(imgMode2, "Mode 2");
+    for (int i = 1; i < NB_ITERATIONS; i++) {
+        sprintf(title, "BEMC-%d", i);
+        fprintf(stdout, "Decomposing %s\n", title);
 
-    /*
-    for (int i = 2; i < 3; i++) {
-        sprintf(buffer, "Mode %d", i);
-        fprintf(stdout, "Decomposing %s\n", buffer);
-
+        imgMode = decompose(inputImg);
         inputImg = inputImg - imgMode;
-        imgMode  = decompose(inputImg);
 
-        CImgDisplay dispModeBis(imgMode, buffer);
+        disp[i].assign(imgMode, title);
     }
-    */
 
-    printf("End.\n");
-
-    while (!dispBase.is_closed()) {
-        dispBase.wait();
+    while (!disp[0].is_closed()) {
+        disp[0].wait();
     }
 
     return 0;
