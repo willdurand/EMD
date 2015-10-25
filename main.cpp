@@ -13,7 +13,7 @@
 
 #include "Euclidean.hpp"
 
-#define MAX_ITERATIONS 15
+#define MAX_ITERATIONS 3
 
 // Variance delta
 #define DELTA 50
@@ -40,130 +40,108 @@ double sum(CImg<float> img, int startedX, int startedY, int w) {
 
 CImg<float> decompose(const CImg<float> input)
 {
-    CImg<float>inputImg(input);
-    std::vector<Euclidean> vectEMax, vectEMin;
-
     ///////////////////////////////////////////////////////////////////////////////
     //              Part 1: Finding minimas and maximas                          //
     ///////////////////////////////////////////////////////////////////////////////
 
-    CImg<float> imgMax(inputImg.channel(0));
-    CImg<float> imgMin(inputImg.channel(0));
-
-    int xmin, xmax, ymin, ymax;
-    float min, max;
-
-    for (int i = 0; i < inputImg.width(); i += SIZE) {
-        for (int j = 0; j < inputImg.height(); j += SIZE) {
-
+    std::vector<Euclidean> vectEMax, vectEMin;
+    CImg<float> imgMax(input.width(), input.height());
+    CImg<float> imgMin(input.width(), input.height());
+    for (int i = 0; i < input.width(); i += SIZE)
+        for (int j = 0; j < input.height(); j += SIZE)
+        {
             // Save max and min locations
-            xmax = i;
-            ymax = j;
-            xmin = i;
-            ymin = j;
-
-            // save values
-            max = imgMax(i,j);
-            min = imgMin(i,j);
-
-            Euclidean eMax(i, j);
-            Euclidean eMin(i, j);
+            int xmin=i, xmax=i, ymin=j, ymax=j;
+            float min = input(i,j), max = input(i,j);
+            imgMax(i,j) = input(i,j);
+            imgMin(i,j) = input(i,j);
 
             // SIZExSIZE
-            for (int k = i; k < i + SIZE; k++) {
-                for (int l = j; l < j + SIZE; l++) {
-
+            for (int k = i; k < i + SIZE; k++)
+                for (int l = j; l < j + SIZE; l++)
+                {
                     // Max
-                    if ((imgMax(k, l) <= max) && (l != ymax || k != xmax)) {
-                        imgMax(k, l) = 0;
-                    } else if (l!=ymax || k!=xmax) {
-                        max = imgMax(k, l);
-                        imgMax(xmax,ymax) = 0;
+                    if ((input(k, l) > max) && (l != ymax || k != xmax))
+                    {
+                        imgMax(xmax, ymax) = 0;
+                        max = input(k, l);
+                        imgMax(k,l) = max;
                         xmax = k;
                         ymax = l;
-
-                        eMax.setX(k);
-                        eMax.setY(l);
                     }
 
                     // Min
-                    if ((imgMin(k, l) >= min) && (l != ymin || k != xmin)) {
-                        imgMin(k, l) = 0;
-                    } else if (l != ymax || k != xmax) {
+                    if ((imgMin(k, l) < min) && (l != ymin || k != xmin))
+                    {
+                        imgMax(xmax, ymax) = 0;
                         min = imgMin(k, l);
-                        imgMin(xmin, ymin) = 0;
+                        imgMax(k,l) = max;
                         xmin = k;
                         ymin = l;
-
-                        eMin.setX(k);
-                        eMin.setY(l);
                     }
                 }
-            }
 
-            vectEMax.push_back(eMax);
-            vectEMin.push_back(eMin);
+            vectEMax.push_back(Euclidean(xmax,ymax));
+            vectEMin.push_back(Euclidean(xmin,ymin));
         }
-    }
 
     // Array of Euclidean distance to the nearest non zero element
     std::vector<Euclidean>::iterator it1, it2;
 
-    for (it1 = vectEMax.begin(); it1 != vectEMax.end(); it1++) {
-        for (it2 = it1 + 1; it2 != vectEMax.end(); it2++) {
+    for (it1 = vectEMax.begin(); it1 != vectEMax.end(); it1++)
+        for (it2 = it1 + 1; it2 != vectEMax.end(); it2++)
+        {
             double dist = (*it1).computeDistanceFrom(*it2);
 
-            if (0 == (*it1).getDistance() || dist < (*it1).getDistance()) {
+            if ((*it1).getDistance() == 0 || dist < (*it1).getDistance())
+            {
                 (*it1).setDistance(dist);
                 (*it1).setNearest(*it2);
             }
 
-            if (0 == (*it2).getDistance() || dist < (*it2).getDistance()) {
+            if ((*it2).getDistance() == 0 || dist < (*it2).getDistance())
+            {
                 (*it2).setDistance(dist);
                 (*it2).setNearest(*it1);
             }
         }
-    }
 
-    for (it1 = vectEMin.begin(); it1 != vectEMin.end(); it1++) {
-        for (it2 = it1 + 1; it2 != vectEMin.end(); it2++) {
+    for (it1 = vectEMin.begin(); it1 != vectEMin.end(); it1++)
+        for (it2 = it1 + 1; it2 != vectEMin.end(); it2++)
+        {
             double dist = (*it1).computeDistanceFrom(*it2);
 
-            if (0 == (*it1).getDistance() || dist < (*it1).getDistance()) {
+            if ((*it1).getDistance() == 0 || dist < (*it1).getDistance())
+            {
                 (*it1).setDistance(dist);
                 (*it1).setNearest(*it2);
             }
 
-            if (0 == (*it2).getDistance() || dist < (*it2).getDistance()) {
+            if ((*it2).getDistance() == 0 || dist < (*it2).getDistance())
+            {
                 (*it2).setDistance(dist);
                 (*it2).setNearest(*it1);
             }
         }
-    }
 
     // Calculate the window size
-    int wmax = 0;
-    for(unsigned int i = 0; i < vectEMin.size(); i++) {
-        double d = MAX(Euclidean::max(vectEMax), Euclidean::max(vectEMin));
-
-        wmax = (int)ceil(d);
-        if(wmax % 2 == 0) {
-            wmax++;
-        }
-    }
-
-    CImg<float> imgSource(inputImg.channel(0));
+    double d = MAX(Euclidean::max(vectEMax), Euclidean::max(vectEMin));
+    int wmax = 2*((int)d/2)+1;
 
     // Order filters with source image
     std::vector<float> vectFilterMax, vectFilterMin;
-
-    for(int unsigned i = 0; i < vectEMax.size(); i++) {
+    for(int unsigned i = 0; i < vectEMax.size(); i++)
+    {
         float max = 0;
-        for (int k = vectEMax[i].getX() - ((wmax - 1) / 2); k < vectEMax[i].getX() + ((wmax + 1) / 2); k++) {
-            for (int l = vectEMax[i].getY() - ((wmax - 1) / 2); l < vectEMax[i].getY() + ((wmax + 1) / 2); l++) {
-                if( (k >= 0 && k < imgSource.width()) && (l >= 0  && l < imgSource.height()) ) {
-                    if (imgSource(k, l) > max) {
-                        max = imgSource(k, l);
+        for (int k = vectEMax[i].getX() - ((wmax - 1) / 2); k < vectEMax[i].getX() + ((wmax + 1) / 2); k++)
+        {
+            for (int l = vectEMax[i].getY() - ((wmax - 1) / 2); l < vectEMax[i].getY() + ((wmax + 1) / 2); l++)
+            {
+                if( (k >= 0 && k < input.width()) && (l >= 0  && l < input.height()) )
+                {
+                    if (input(k, l) > max)
+                    {
+                        max = input(k, l);
                     }
                 }
             }
@@ -171,13 +149,17 @@ CImg<float> decompose(const CImg<float> input)
         vectFilterMax.push_back(max);
     }
 
-    for(int unsigned i = 0; i < vectEMin.size(); i++) {
+    for(int unsigned i = 0; i < vectEMin.size(); i++)
+    {
         float min = 255;
-        for (int k = vectEMin[i].getX() - ((wmax - 1) / 2); k < vectEMin[i].getX() + ((wmax + 1) / 2); k++) {
-            for (int l = vectEMin[i].getY() - ((wmax - 1) / 2); l < vectEMin[i].getY() + ((wmax + 1) / 2); l++) {
-                if( (k >= 0 && k < imgSource.width()) && (l >= 0  && l < imgSource.height()) ) {
-                    if (imgSource(k, l) < min) {
-                        min = imgSource(k, l);
+        for (int k = vectEMin[i].getX() - ((wmax - 1) / 2); k <= vectEMin[i].getX() + ((wmax + 1) / 2); k++)
+        {
+            for (int l = vectEMin[i].getY() - ((wmax - 1) / 2); l < vectEMin[i].getY() + ((wmax + 1) / 2); l++)
+            {
+                if( (k >= 0 && k < input.width()) && (l >= 0  && l < input.height()) )
+                {
+                    if (input(k, l) < min) {
+                        min = input(k, l);
                     }
                 }
             }
@@ -185,55 +167,61 @@ CImg<float> decompose(const CImg<float> input)
         vectFilterMin.push_back(min);
     }
 
-    CImg<float> newImgMax(imgMax.width(), imgMax.height());
-
     // Calculate the upper envelope
-    for(int unsigned i = 0; i < vectEMax.size(); i++) {
-        for (int k = vectEMax[i].getX() - ((wmax - 1) / 2); k < vectEMax[i].getX() + ((wmax + 1) / 2); k++) {
-            for (int l = vectEMax[i].getY() - ((wmax - 1) / 2); l < vectEMax[i].getY() + ((wmax + 1) / 2); l++) {
-                if ((k >= 0 && k < imgSource.width()) && (l >= 0  && l < imgSource.height())) {
-                    if( imgMax(k, l) == 0 ) {
+    CImg<float> newImgMax(imgMax.width(), imgMax.height());
+    for(int unsigned i = 0; i < vectEMax.size(); i++)
+    {
+        for (int k = vectEMax[i].getX() - ((wmax - 1) / 2); k < vectEMax[i].getX() + ((wmax + 1) / 2); k++)
+        {
+            for (int l = vectEMax[i].getY() - ((wmax - 1) / 2); l < vectEMax[i].getY() + ((wmax + 1) / 2); l++)
+            {
+                if ((k >= 0 && k < input.width()) && (l >= 0  && l < input.height()))
+                {
+                    if (imgMax(k, l) == 0)
                         imgMax(k, l) = vectFilterMax[i];
-                    }
-                    else {
+                    else
                         imgMax(k, l) = (int)((imgMax(k, l) + vectFilterMax[i]) / 2);
-                    }
                 }
             }
         }
     }
 
     // Smooth of the upper envelope
-    for (int k = 0; k < imgSource.width(); k++) {
-        for (int l = 0; l < imgSource.height(); l++) {
-            if( (k >= 0 && k < imgSource.width()) && (l >= 0  && l < imgSource.height()) ) {
+    for (int k = 0; k < input.width(); k++)
+    {
+        for (int l = 0; l < input.height(); l++) {
+            if( (k >= 0 && k < input.width()) && (l >= 0  && l < input.height()) )
+            {
                 newImgMax(k, l) = (int)sum(imgMax, k, l, wmax) / (wmax * wmax);
             }
         }
     }
 
-    CImg<float> newImgMin(imgMin.width(), imgMin.height());
-
     // Calculate the lower envelope
+    CImg<float> newImgMin(imgMin.width(), imgMin.height());
     for(int unsigned i = 0; i < vectEMin.size(); i++) {
-        for (int k = vectEMin[i].getX() - ((wmax - 1) / 2); k < vectEMin[i].getX() + ((wmax + 1) / 2); k++) {
-            for (int l = vectEMin[i].getY() - ((wmax - 1) / 2); l < vectEMin[i].getY() + ((wmax + 1) / 2); l++) {
-                if( (k >= 0 && k < imgSource.width()) && (l >= 0  && l < imgSource.height()) ) {
-                    if( imgMin(k, l) == 0 ) {
+        for (int k = vectEMin[i].getX() - ((wmax - 1) / 2); k < vectEMin[i].getX() + ((wmax + 1) / 2); k++)
+        {
+            for (int l = vectEMin[i].getY() - ((wmax - 1) / 2); l < vectEMin[i].getY() + ((wmax + 1) / 2); l++)
+            {
+                if( (k >= 0 && k < input.width()) && (l >= 0  && l < input.height()) )
+                {
+                    if( imgMin(k, l) == 0 )
                         imgMin(k, l) = vectFilterMin[i];
-                    }
-                    else {
+                    else
                         imgMin(k, l) = (int)((imgMin(k, l) + vectFilterMin[i]) / 2);
-                    }
                 }
             }
         }
     }
 
     // Smooth of the lower envelope
-    for (int k = 0; k < imgSource.width(); k++) {
-        for (int l = 0; l < imgSource.height(); l++) {
-            if( (k >= 0 && k < imgSource.width()) && (l >= 0  && l < imgSource.height()) ) {
+    for (int k = 0; k < input.width(); k++)
+    {
+        for (int l = 0; l < input.height(); l++)
+        {
+            if( (k >= 0 && k < input.width()) && (l >= 0  && l < input.height()) )
+            {
                 newImgMin(k, l) = (int)sum(imgMin, k, l, wmax) / (wmax * wmax);
             }
         }
@@ -244,19 +232,16 @@ CImg<float> decompose(const CImg<float> input)
     ///////////////////////////////////////////////////////////////////////////////
 
     // Calculate the Average
-    CImg<float> imgMoyenne(inputImg.width(), inputImg.height());
-
-    for (int i = 0; i < inputImg.width(); i++) {
-        for (int j = 0; j < inputImg.height(); j++) {
+    CImg<float> imgMoyenne(input.width(), input.height());
+    for (int i = 0; i < input.width(); i++)
+        for (int j = 0; j < input.height(); j++)
             imgMoyenne(i, j) = (newImgMin(i, j) + newImgMax(i, j)) /2;
-        }
-    }
 
     ///////////////////////////////////////////////////////////////////////////////
     //                         Partie 3: Deletion                                //
     ///////////////////////////////////////////////////////////////////////////////
 
-    return inputImg - imgMoyenne;
+    return input - imgMoyenne;
 }
 
 /*******************************************************************************

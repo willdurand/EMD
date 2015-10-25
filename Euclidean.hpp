@@ -19,7 +19,7 @@ public:
         * @param const int x   Coordinate X
         * @param const int y   Coordinate Y
         */
-    Euclidean(const int x, const int y) : _x(x), _y(y) {}
+    Euclidean(const int x, const int y) : _x(x), _y(y), _distance(0) {}
 
     /**
         * @param const int x   Coordinate X
